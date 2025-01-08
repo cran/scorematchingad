@@ -9,12 +9,12 @@ test_that("ppi tape values do not effect ll values", {
   thetaeval <- model1$theta + 1
 
   psphere <- manifoldtransform("sim", "sqrt", "sph")
-  pppi1 <- tapell("ppi", ytape = u1, usertheta = NA * thetaeval, tranobj = psphere$tran, function(n){model1$theta})$ptr
-  pppi2 <- tapell("ppi", ytape = u0, usertheta = NA * thetaeval, tranobj = psphere$tran, function(n){model0$theta})$ptr
+  pppi1 <- tapell("ppi", ytape = u1, usertheta = NA * thetaeval, tranobj = psphere$tran, function(n){model1$theta})
+  pppi2 <- tapell("ppi", ytape = u0, usertheta = NA * thetaeval, tranobj = psphere$tran, function(n){model0$theta})
 
-  expect_equal(pForward0(pppi1, ueval, thetaeval), pForward0(pppi2, ueval, thetaeval))
-  expect_equal(pJacobian(pppi1, ueval, thetaeval), pJacobian(pppi2, ueval, thetaeval))
-  expect_equal(pHessian(pppi1, ueval, thetaeval), pHessian(pppi2, ueval, thetaeval))
+  expect_equal(pppi1$eval(ueval, thetaeval), pppi2$eval(ueval, thetaeval))
+  expect_equal(pppi1$Jac(ueval, thetaeval), pppi2$Jac(ueval, thetaeval))
+  expect_equal(pppi1$Hes(ueval, thetaeval), pppi2$Hes(ueval, thetaeval))
 })
 
 
@@ -28,15 +28,15 @@ test_that("ppi and dirichlet smd value match when AL and bL is zero and p = 3", 
   utabl <- rppi(10,beta=beta,AL=ALs,bL=bL,maxden=4)
 
   acut = 0.1
-  dirtapes <- buildsmdtape("sim","sqrt", "sph", "dirichlet",
+  dirtapes <- tape_smd("sim","sqrt", "sph", "dirichlet",
                            rep(0.1, p), rep(0.1, p) * NA,
                            bdryw = "minsq", acut = acut)
-  ppitapes <- buildsmdtape("sim","sqrt", "sph", "ppi",
+  ppitapes <- tape_smd("sim","sqrt", "sph", "ppi",
                            rep(0.1, p), theta * NA,
                            bdryw = "minsq", acut = acut)
 
-  ppival <- pForward0(ppitapes$smdtape$ptr, theta, utabl[2, ])
-  dirval <- pForward0(dirtapes$smdtape$ptr, beta, utabl[2, ])
+  ppival <- ppitapes$smdtape$eval(theta, utabl[2, ])
+  dirval <- dirtapes$smdtape$eval(beta, utabl[2, ])
   expect_equal(ppival, dirval)
 })
 
@@ -52,10 +52,10 @@ test_that("cppad ppi estimate works when AL and bL is zero and p = 4", {
   utabl <- rppi(100,beta=beta,AL=ALs,bL=bL,maxden=4)
 
   acut = 0.1
-  dirtapes <- buildsmdtape("sim","sqrt", "sph", "dirichlet",
+  dirtapes <- tape_smd("sim","sqrt", "sph", "dirichlet",
                            rep(0.1, p), rep(0.1, p) * NA,
                            bdryw = "minsq", acut = acut)
-  ppitapes <- buildsmdtape("sim","sqrt", "sph", "ppi",
+  ppitapes <- tape_smd("sim","sqrt", "sph", "ppi",
                            rep(0.1, p), ppi_paramvec(AL = 0, bL=0, p = p),
                            bdryw = "minsq", acut = acut)
 
@@ -63,9 +63,9 @@ test_that("cppad ppi estimate works when AL and bL is zero and p = 4", {
   # potentially the ordering of the theta values is wrong??
   out <- cppad_closed(ppitapes$smdtape, Y = utabl)
 
-  expect_equal(pForward0(dirtapes$lltape$ptr, utabl[2, ], beta), pForward0(ppitapes$lltape$ptr, utabl[2, ], beta))
-  expect_equal(pJacobian(dirtapes$lltape$ptr, utabl[2, ], beta), pJacobian(ppitapes$lltape$ptr, utabl[2, ], beta))
-  expect_equal(pForward0(dirtapes$smdtape$ptr, beta, utabl[2, ]), pForward0(ppitapes$smdtape$ptr, beta, utabl[2, ]))
+  expect_equal(dirtapes$lltape$eval(utabl[2, ], beta), ppitapes$lltape$eval(utabl[2, ], beta))
+  expect_equal(dirtapes$lltape$Jac(utabl[2, ], beta), ppitapes$lltape$Jac(utabl[2, ], beta))
+  expect_equal(dirtapes$smdtape$eval(beta, utabl[2, ]), ppitapes$smdtape$eval(beta, utabl[2, ]))
 
   hardcodedestimate <- dir_sqrt_minimah(utabl, acut)
 
@@ -215,7 +215,7 @@ test_that("ppi via cppad matches Score1 for p=5 and has SM discrepancy has small
                ignore_attr = TRUE)
 
   #also it makes sense that the smd and gradient are v low at the hardcoded estimate
-  ppitapes <- buildsmdtape("sim","sqrt", "sph", "ppi",
+  ppitapes <- tape_smd("sim","sqrt", "sph", "ppi",
                            rep(0.1, p), ppi_paramvec(p, bL = bL, beta = beta),
                            bdryw = "minsq", acut = acut)
   smvals <- smvalues_wsum(ppitapes$smdtape, prop, fromsmatrix(est_hardcoded$est$AL))

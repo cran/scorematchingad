@@ -91,7 +91,7 @@ Estimates the parameters of the Polynomially-Tilted Pairwise Interaction (PPI) m
 By default \code{ppi()} uses \code{\link[=cppad_closed]{cppad_closed()}} to find estimate.
 For many situations a hard-coded implementation of the score matching estimator is also available.
 
-For a given parameter vector \code{evalparam}, \code{ppi_smvalues()} computes the score matching discrepancy, the gradient and the Hessian of the score matching discrepancy (see \code{\link[=smvalues]{smvalues()}}) and the gradient offset of the score matching discrepancy (see \code{\link[=quadratictape_parts]{quadratictape_parts()}} and \code{\link[=tapeGradOffset]{tapeGradOffset()}}).
+For a given parameter vector \code{evalparam}, \code{ppi_smvalues()} computes the score matching discrepancy, the gradient and the Hessian of the score matching discrepancy (see \code{\link[=smvalues]{smvalues()}}) and the gradient offset of the score matching discrepancy (see \code{\link[=quadratictape_parts]{quadratictape_parts()}} and \code{\link[=tape_gradoffset]{tape_gradoffset()}}).
 }
 \details{
 Estimation may be performed via transformation of the measure in Hyvärinen divergence from Euclidean space to the simplex (inverse of the additive log ratio transform), from a hyperplane to the simplex (inverse of the centred log ratio transform), from the positive quadrant of the sphere to the simplex (inverse of the square root transform), or without any transformation. In the latter two situations there is a boundary and \emph{weighted Hyvärinen divergence} \insertCite{@Equation 7, @scealy2023sc}{scorematchingad} is used.
@@ -140,7 +140,7 @@ The PPI model density is proportional to
 where \eqn{p} is the dimension of a compositional measurement \eqn{z}, and \eqn{z_L} is \eqn{z} without the final (\eqn{p}th) component.
 \eqn{A_L} is a \eqn{p-1 \times p-1} symmetric matrix that controls the covariance between components.
 \eqn{b_L} is a \eqn{p-1} vector that controls the location within the simplex.
-The \eqn{i}th component \eqn{\beta_i} of \eqn{\beta} controls the concentration of density when \eqn{z_i} is close to zero: when \eqn{\beta_i \geq 0} there is no concentration and \eqn{\beta_i} is hard to identify; when \eqn{\beta_i < 0} then the probability density of the PPI model increases unboundedly as \eqn{z_i} approaches zero, with the increasing occuring more rapidly and sharply the closer \eqn{\beta_i} is to \eqn{-1}.
+The \eqn{i}th component \eqn{\beta_i} of \eqn{\beta} controls the concentration of density when \eqn{z_i} is close to zero: when \eqn{\beta_i \geq 0} there is no concentration and \eqn{\beta_i} is hard to identify; when \eqn{\beta_i < 0} then the probability density of the PPI model increases unboundedly as \eqn{z_i} approaches zero, with the increasing occurring more rapidly and sharply the closer \eqn{\beta_i} is to \eqn{-1}.
 }
 
 \examples{

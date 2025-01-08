@@ -8,11 +8,11 @@ ppitape <- tapell(ll = "ppi",
 expect_type(ppitape$xtape, "double") #vectors are neither S3 objects nor S4 objects
 expect_type(ppitape$dyntape, "double")
 expect_type(ppitape$name, "character")
-expect_type(ppitape$ptr, "externalptr")
+})
 
-expect_error(ppitape$xtape <- rep(0, 3))
-expect_error(ppitape$dyntape <- rep(0, 3))
-expect_error(ppitape$name <- rep(0, 3))
-expect_error(ppitape$ptre <- rep(0, 3))
-
+test_that("print.Rcpp_ADFun() works", {
+  utape = rep(0.2, 5)
+  dyntape = rep(-0.1, 5)
+  tape <- tape_uld_inbuilt("dirichlet", utape, dyntape)
+  expect_output(print(tape), "dirichlet.*5")
 })

@@ -2,13 +2,13 @@
 #' @family tape evaluators
 #' @description Computes a range of relevant information for investigating score matching estimators.
 #' @inheritParams evaltape
-#' @param smdtape A taped score matching discrepancy. Most easily created by [`buildsmdtape()`].
+#' @param smdtape A taped score matching discrepancy. Most easily created by [`tape_smd()`].
 #' @details Computes the score matching discrepancy function from [`scorematchingtheory`] or weighted sum of the score matching discrepancy function.
 #' The gradient and Hessian are returned as arrays of row-vectors with each row corresponding to a row in `xmat` and `pmat`. 
 #' Convert a Hessian row-vector to a matrix using `matrix(ncol = length(smdtape$xtape))`.
 #' @examples
 #' m <- rppi_egmodel(100)
-#' smdtape <- buildsmdtape("sim", "sqrt", "sph", "ppi",
+#' smdtape <- tape_smd("sim", "sqrt", "sph", "ppi",
 #'               ytape = rep(1/m$p, m$p),
 #'               usertheta = ppi_paramvec(beta = m$beta),
 #'               bdryw = "minsq", acut = 0.01)$smdtape
@@ -16,14 +16,14 @@
 #' smvalues_wsum(smdtape, m$sample, m$theta[1:5])$grad/nrow(m$sample)
 #' @export
 smvalues <- function(smdtape, xmat, pmat, xcentres = NA * xmat, approxorder = 10){
-  stopifnot(inherits(smdtape, "ADFun"))
+  stopifnot(inherits(smdtape, "Rcpp_ADFun"))
   # prepare tapes
-  Jsmdfun <- tapeJacobian(smdtape)
-  Hsmdfun <- tapeJacobian(Jsmdfun)
+  Jsmdfun <- tape_Jacobian(smdtape)
+  Hsmdfun <- tape_Jacobian(Jsmdfun)
   
-  smdfun_u <- tapeSwap(smdtape) #don't use a boundary for taping!
-  Jsmdfun_u <- tapeSwap(Jsmdfun)
-  Hsmdfun_u <- tapeSwap(Hsmdfun)
+  smdfun_u <- tape_swap(smdtape) #don't use a boundary for taping!
+  Jsmdfun_u <- tape_swap(Jsmdfun)
+  Hsmdfun_u <- tape_swap(Hsmdfun)
 
   smdvals <- evaltape(smdfun_u, xmat, pmat, xcentres = xcentres, approxorder = approxorder)
 

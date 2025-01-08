@@ -16,21 +16,21 @@
 #' where the Hessian and offset \eqn{b(t)} depend only on \eqn{t}.
 #'
 #' The functions here evaluate the Hessian and offset \eqn{b(t)} for many values of \eqn{t}.
-#' Tapes of the Hessian and gradient offset are created using [`tapeHessian()`] and [`tapeGradOffset()`] respectively.
+#' Tapes of the Hessian and gradient offset are created using [`tape_Hessian()`] and [`tape_gradoffset()`] respectively.
 #' These tapes are then evaluated for every row of `tmat`.
 #' When the corresponding `tcentres` row is not `NA`, then approximate (but very accurate) results are calculated using Taylor approximation around the location given by the row of `tcentres`.
 #' 
 #' For score matching \eqn{x} is the set of model parameters and the vector \eqn{t} is a (multivariate) measurement.
-#' @param tape A tape of a quadratic function where the independent and dynamic parameters correspond to the \eqn{x} and \eqn{t} in the details section, respectively. For score matching `tape` should be a tape of the score matching discrepancy function \eqn{A(z) + B(z) + C(z)} in [`scorematchingtheory`] with \eqn{z} the *dynamic parameters* and the model parameters the *independent variable* (which is the usual for the return of [`buildsmdtape()`]).
+#' @param tape A tape of a quadratic function where the independent and dynamic parameters correspond to the \eqn{x} and \eqn{t} in the details section, respectively. For score matching `tape` should be a tape of the score matching discrepancy function \eqn{A(z) + B(z) + C(z)} in [`scorematchingtheory`] with \eqn{z} the *dynamic parameters* and the model parameters the *independent variable* (which is the usual for the return of [`tape_smd()`]).
 #' @param tmat A matrix of vectors corresponding to values of \eqn{t} (see details). Each row corresponds to a vector. For score matching, these vectors are measurements.
 #' @param tcentres A matrix of Taylor approximation centres for rows of `tmat` that require approximation. `NA` for rows that do not require approximation.
 #' @param approxorder The order of the Taylor approximation to use.
 #' @return A list of
 #'  + `offset` Array of offsets \eqn{b(t)}, each row corresponding to a row in `tmat`
-#'  + `Hessian` Array of vectorised \eqn{H f(x; t)} (see [`tapeHessian()`]), each row corresponding to a row in `tmat`. For each row, obtain the Hessian in matrix format by using `matrix(ncol = length(tape$xtape))`.
+#'  + `Hessian` Array of vectorised \eqn{H f(x; t)} (see [`tape_Hessian()`]), each row corresponding to a row in `tmat`. For each row, obtain the Hessian in matrix format by using `matrix(ncol = length(tape$xtape))`.
 #' @examples
 #' u <- rep(1/3, 3)
-#' smdtape <- buildsmdtape("sim", "sqrt", "sph", "ppi",
+#' smdtape <- tape_smd("sim", "sqrt", "sph", "ppi",
 #'               ytape = u,
 #'               usertheta = ppi_paramvec(p = 3),
 #'               bdryw = "minsq", acut = 0.01,
@@ -40,14 +40,14 @@
 #'   tmat = rbind(u, c(1/4, 1/4, 1/2)))
 #' @export
 quadratictape_parts <- function(tape, tmat, tcentres = NA * tmat, approxorder = 10){
-  stopifnot(inherits(tape, "ADFun"))
+  stopifnot(inherits(tape, "Rcpp_ADFun"))
   stopifnot(nrow(tmat) == nrow(tcentres))
   stopifnot(testquadratic(tape))
   toapprox <- !is.na(tcentres[, 1])
 
-  Hesstape <- tapeHessian(tape)
-  OffsetTape <- tapeGradOffset(tape)
-  Hesstape_switched <- tapeSwap(Hesstape) #Hesstape is wrt to x (which in smd world is actually the model parameter set), but we want it to be wrt to the dynamic parameter like OffsetTape is
+  Hesstape <- tape_Hessian(tape)
+  OffsetTape <- tape_gradoffset(tape)
+  Hesstape_switched <- tape_swap(Hesstape) #Hesstape is wrt to x (which in smd world is actually the model parameter set), but we want it to be wrt to the dynamic parameter like OffsetTape is
 
   #exact and approximat evalution of Hess
   fakeparametermat <- matrix(0, 

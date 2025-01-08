@@ -1,13 +1,13 @@
 # estimates of the variance of the estimator for cppad_search
 sme_estvar <- function(smdfun, estimate, Y, Yapproxcentres = NA * Y, approxorder = 10){
-  stopifnot(inherits(smdfun, "ADFun"))
+  stopifnot(inherits(smdfun, "Rcpp_ADFun"))
   # generate tapes with respect to the measurement (parameter is dynamic)
   p <- ncol(Y)
-  Jsmdfun <- tapeJacobian(smdfun)
-  Hsmdfun <- tapeJacobian(Jsmdfun)
+  Jsmdfun <- tape_Jacobian(smdfun)
+  Hsmdfun <- tape_Jacobian(Jsmdfun)
   
-  Jsmdfun_u <- tapeSwap(Jsmdfun)
-  Hsmdfun_u <- tapeSwap(Hsmdfun)
+  Jsmdfun_u <- tape_swap(Jsmdfun)
+  Hsmdfun_u <- tape_swap(Hsmdfun)
 
   hess <- evaltape_wsum(Hsmdfun_u, xmat = Y, pmat = 0*estimate, xcentres = Yapproxcentres, approxorder = 10)
   sens <- -matrix(hess, byrow = TRUE, ncol = length(estimate))/nrow(Y)

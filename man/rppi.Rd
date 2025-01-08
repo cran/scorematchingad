@@ -39,7 +39,7 @@ If a number, then the pth element of \eqn{\beta} will be fixed at the given valu
 
 \item{maxden}{This is the constant \eqn{log(C)} in \insertCite{@Appendix A.1.3 @scealy2023sc}{scorematchingad}.}
 
-\item{maxmemorysize}{Advanced use. The maximum size, in bytes, for matrices containing simulated Dirchlet samples. The default of \code{1E5} corresponds to 100 mega bytes.}
+\item{maxmemorysize}{Advanced use. The maximum size, in bytes, for matrices containing simulated Dirichlet samples. The default of \code{1E5} corresponds to 100 mega bytes.}
 }
 \value{
 A matrix with \code{n} rows and \code{p} columns. Each row is an independent draw from the specified PPI distribution.
@@ -69,9 +69,9 @@ Larger \code{maxmemorysize} leads to faster simulation so long as \code{maxmemor
 }
 \section{Functions}{
 \itemize{
-\item \code{rppi_egmodel}: Simulates the 3-component PPI model from \insertCite{@Section 2.3, @scealy2023sc}{scorematchingad} and returns both simulations and model parameters.
-}}
+\item \code{rppi_egmodel()}: Simulates the 3-component PPI model from \insertCite{@Section 2.3, @scealy2023sc}{scorematchingad} and returns both simulations and model parameters.
 
+}}
 \examples{
 beta0=c(-0.8, -0.8, -0.5)
 AL = diag(nrow = 2)
@@ -85,8 +85,8 @@ rppi_egmodel(1000)
 \seealso{
 Other PPI model tools: 
 \code{\link{dppi}()},
+\code{\link{ppi}()},
 \code{\link{ppi_param_tools}},
-\code{\link{ppi_robust}()},
-\code{\link{ppi}()}
+\code{\link{ppi_robust}()}
 }
 \concept{PPI model tools}

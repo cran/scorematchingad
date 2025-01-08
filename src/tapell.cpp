@@ -45,7 +45,7 @@ CppAD::ADFun<double> tapellcpp(veca1 z, //data measurement tranformed to M manif
     }
   }
 
-  //tape relationship between x and log-likelihood
+  //tape relationship between x and log-density
   CppAD::Independent(z, thetavar);  //for this tape, theta must be altered using new_dynamic
   if (verbose){
     Rcpp::Rcout << "thetavar is: " << thetavar.transpose() << std::endl;
@@ -88,7 +88,7 @@ CppAD::ADFun<double> tapellcpp(veca1 z, //data measurement tranformed to M manif
 }
 
 
-Rcpp::XPtr< CppAD::ADFun<double> > ptapell2(veca1 z_ad, //data measurement on the M manifold
+pADFun ptapell2(veca1 z_ad, //data measurement on the M manifold
                                      veca1 theta_ad,
                                      Rcpp::XPtr<llPtr> llfXPtr, //the log likelihood function
                                      transform_a1type & tran,
@@ -98,16 +98,16 @@ Rcpp::XPtr< CppAD::ADFun<double> > ptapell2(veca1 z_ad, //data measurement on th
   // unwrap likelihood function
   llPtr func = *Rcpp::XPtr<llPtr>(llfXPtr);
 
-  CppAD::ADFun<double>* out = new CppAD::ADFun<double>; //returning a pointer
-  *out = tapellcpp(z_ad,
+  CppAD::ADFun<double> tape; //returning a pointer
+  tape = tapellcpp(z_ad,
                 theta_ad,
                 func,
                 tran,
                 fixedtheta,
                 verbose);
-
-  Rcpp::XPtr< CppAD::ADFun<double> > pout(out, true);
-  return(pout);
+  
+  pADFun out(tape, z_ad, theta_ad);
+  return(out);
 }
 
 
@@ -138,11 +138,17 @@ Rcpp::XPtr<llPtr> getllptr(std::string llname){
   return(pout);
 }
 
- 
-a1type evalll(Rcpp::XPtr<llPtr> llfXPtr, const veca1& u, const veca1& theta){
-  llPtr func = *Rcpp::XPtr<llPtr>(llfXPtr);
-  a1type out;
-  out = func(u, theta); //implicit dereferencing of function pointer as per: https://www.learncpp.com/cpp-tutorial/function-pointers/
+pADFun tape_uld_inbuilt(std::string name, veca1 x, veca1 theta){
+  Rcpp::XPtr < llPtr > ptr = getllptr(name); 
+  llPtr func = *ptr;
+  CppAD::ADFun<double> tape;
+  CppAD::Independent(x, theta);
+  veca1 y(1);
+  y(0) = func(x, theta);
+  tape.Dependent(x, y);
+  tape.check_for_nan(false);
+  pADFun out(tape, x, theta, name);
   return(out);
 }
 
+ 

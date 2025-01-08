@@ -9,49 +9,49 @@ test_that("Dirichlet with smd values and derivatives independent of tape", {
   thetaeval <- c(-0.1, -0.5, 2)
 
   compare <- function(uval, thetaeval, tapes1, tapes2){
-  expect_equal(pForward0(tapes1$lltape$ptr, ueval, thetaeval), pForward0(tapes2$lltape$ptr, ueval, thetaeval))
-  expect_equal(pJacobian(tapes1$lltape$ptr, ueval, thetaeval), pJacobian(tapes2$lltape$ptr, ueval, thetaeval))
-  expect_equal(pHessian(tapes1$lltape$ptr, ueval, thetaeval), pHessian(tapes2$lltape$ptr, ueval, thetaeval))
+  expect_equal(tapes1$lltape$eval(ueval, thetaeval), tapes2$lltape$eval(ueval, thetaeval))
+  expect_equal(tapes1$lltape$Jac(ueval, thetaeval), tapes2$lltape$Jac(ueval, thetaeval))
+  expect_equal(tapes1$lltape$Hes(ueval, thetaeval), tapes2$lltape$Hes(ueval, thetaeval))
 
-  expect_equal(pForward0(tapes1$smdtape$ptr, thetaeval, ueval), pForward0(tapes2$smdtape$ptr, thetaeval, ueval))
-  expect_equal(pJacobian(tapes1$smdtape$ptr, thetaeval, ueval), pJacobian(tapes2$smdtape$ptr, thetaeval, ueval))
-  expect_equal(pHessian(tapes1$smdtape$ptr, thetaeval, ueval), pHessian(tapes2$smdtape$ptr, thetaeval, ueval))
+  expect_equal(tapes1$smdtape$eval(thetaeval, ueval), tapes2$smdtape$eval(thetaeval, ueval))
+  expect_equal(tapes1$smdtape$Jac(thetaeval, ueval), tapes2$smdtape$Jac(thetaeval, ueval))
+  expect_equal(tapes1$smdtape$Hes(thetaeval, ueval), tapes2$smdtape$Hes(thetaeval, ueval))
   return(NULL)
   }
 
   #Sphere with minsq
-  tapes1 <- buildsmdtape("sim", "sqrt", "sph",
+  tapes1 <- tape_smd("sim", "sqrt", "sph",
                "dirichlet", u1, rep(NA, 3), thetatape_creator = function(n){theta1},
                bdryw = "minsq", acut = acut)
-  tapes2 <- buildsmdtape("sim", "sqrt", "sph",
+  tapes2 <- tape_smd("sim", "sqrt", "sph",
                "dirichlet", u2, rep(NA, 3), thetatape_creator = function(n){theta2},
                bdryw = "minsq", acut = acut)
 
   compare(ueval, thetaeval, tapes1, tapes2)
 
   #Sphere, prodsq
-  tapes1 <- buildsmdtape("sim", "sqrt", "sph",
+  tapes1 <- tape_smd("sim", "sqrt", "sph",
                "dirichlet", u1, rep(NA, 3), thetatape_creator = function(n){theta1},
                bdryw = "prodsq", acut = acut)
-  tapes2 <- buildsmdtape("sim", "sqrt", "sph",
+  tapes2 <- tape_smd("sim", "sqrt", "sph",
                "dirichlet", u2, rep(NA, 3), thetatape_creator = function(n){theta2},
                bdryw = "prodsq", acut = acut)
   compare(ueval, thetaeval, tapes1, tapes2)
 
   #Simplex
-  tapes1 <- buildsmdtape("sim", "identity", "sim",
+  tapes1 <- tape_smd("sim", "identity", "sim",
                "dirichlet", u1, rep(NA, 3), thetatape_creator = function(n){theta1},
                bdryw = "minsq", acut = acut)
-  tapes2 <- buildsmdtape("sim", "identity", "sim",
+  tapes2 <- tape_smd("sim", "identity", "sim",
                "dirichlet", u2, rep(NA, 3), thetatape_creator = function(n){theta2},
                bdryw = "minsq", acut = acut)
   compare(ueval, thetaeval, tapes1, tapes2)
 
   #Simplex, prodsq
-  tapes1 <- buildsmdtape("sim", "identity", "sim",
+  tapes1 <- tape_smd("sim", "identity", "sim",
                "dirichlet", u1, rep(NA, 3), thetatape_creator = function(n){theta1},
                bdryw = "prodsq", acut = acut)
-  tapes2 <- buildsmdtape("sim", "identity", "sim",
+  tapes2 <- tape_smd("sim", "identity", "sim",
                "dirichlet", u2, rep(NA, 3), thetatape_creator = function(n){theta2},
                bdryw = "prodsq", acut = acut)
   compare(ueval, thetaeval, tapes1, tapes2)

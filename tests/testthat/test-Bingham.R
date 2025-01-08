@@ -16,10 +16,10 @@ test_that("taped Bingham log-likelihood gives correct values", {
 
   u <- t(sample[1, , drop = FALSE])
 
-  expect_equal(pForward0(lltape$ptr, u, theta), t(u) %*% A %*% u,
+  expect_equal(lltape$eval(u, theta), t(u) %*% A %*% u,
                ignore_attr = TRUE)
 
-  expect_equal(pJacobian(lltape$ptr, u, theta), 2 * A %*% u,
+  expect_equal(lltape$Jac(u, theta), 2 * A %*% u,
                ignore_attr = TRUE)
 
   # test deriv wrt theta
@@ -28,8 +28,8 @@ test_that("taped Bingham log-likelihood gives correct values", {
     return(t(u) %*% A %*% u)
   }
   Rgradt <- numericDeriv(quote(llBingham(theta)), c("theta"))
-  lltape_t <- tapeSwap(lltape)
-  expect_equal(pJacobian(lltape_t$ptr, theta, u), attr(Rgradt, "gradient"),
+  lltape_t <- tape_swap(lltape)
+  expect_equal(lltape_t$Jac(theta, u), attr(Rgradt, "gradient"),
                tolerance = 1E-5, ignore_attr = TRUE)
 })
 
