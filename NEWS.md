@@ -1,3 +1,13 @@
+# Version 0.1.4
+Custom boundary weight functions enabled through `tape_bdryw()`, the results of which can be passed to `tape_smd()`.
+
+# Version 0.1.3
+Bug fixes: export of `evaltape_range()` and `keeprange()`.
+Added a new tape builder that averages range `avgrange()`.
+
+# Version 0.1.2
+Exposing new functions for modifying the arguments of Rcpp_adfun objects: fixdynamic() and fixindependent().
+
 # Version 0.1.1
 No longer using RcppXPtrUtils.
 Small fix to creation of XPtr to ADFun in movetoXPtr()

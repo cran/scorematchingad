@@ -2,8 +2,8 @@
 #' @family tape builders
 #' @family generic score matching tools
 #' @param thetatape_creator A function that generates tape values for theta. Must take a single argument, `n` the number for values to generate.
-#' @param bdryw The name of the boundary weight function. "ones" for manifolds without boundary. For the simplex and positive orthant of the sphere, "prodsq" and "minsq" are possible - see [`ppi()`] for more information on these.
-#' @param acut A parameter passed to the boundary weight function `bdryw`. Ignored for `bdryw = "ones"`.
+#' @param bdryw The name of the boundary weight function or the tape of a custom boundary weight function. See [`tape_bdryw()`]. "ones" for manifolds without boundary. For the simplex and positive orthant of the sphere, "prodsq" and "minsq" are possible - see [`ppi()`] for more information on these.
+#' @param acut An optional parameter passed to the built-in boundary weight functions. See [`ppi()`] for more information.
 #' @param verbose If `TRUE` more details are printed when taping. These details are for debugging and will likely be comprehensible only to users familiar with the source code of this package.
 #' @description
 #' For a parametric model family, the function `tape_smd()` generates `CppAD` tapes for the unnormalised log-density of the model family and of the score matching discrepancy function \eqn{A(z) + B(z) + C(z)} (defined in [`scorematchingtheory`]).
@@ -55,13 +55,7 @@ tape_smd <- function(start, tran = "identity", end = start, ll,
 
   tranman <- manifoldtransform(start, tran, end)
 
-  # check bdryw and associated acut
-  if (!(all(c(tran, end) == c("sqrt", "sph")) | all(c(tran, end) == c("identity", "sim")))){
-    if (bdryw != "ones"){warning("Manifold supplied has no boundary. Using bdryw = 'ones' is strongly recommended.")}
-  }
-  if ((bdryw == "ones") && (abs(acut - 1) > 1E-8)){
-    warning("The value of 'acut' is ignored for bdryw == 'ones'")
-  }
+
 
   lltape <- tapell(ll = ll,
                     ytape = ytape,
@@ -69,11 +63,25 @@ tape_smd <- function(start, tran = "identity", end = start, ll,
                     thetatape_creator = thetatape_creator,
                     tranobj = tranman$tran)
   stopifnot(is.numeric(acut))
+
+  # choose between a canned boundary weight function or a custom boundary weight function
+  if (typeof(bdryw) == "character"){ 
+    # check bdryw and associated acut
+    if (!(all(c(tran, end) == c("sqrt", "sph")) | all(c(tran, end) == c("identity", "sim")))){
+      if (bdryw != "ones"){warning("Manifold supplied has no boundary. Using bdryw = 'ones' is strongly recommended.")}
+    }
+    if ((bdryw == "ones") && (abs(acut - 1) > 1E-8)){
+      warning("The value of 'acut' is ignored for bdryw == 'ones'")
+    }
+    bdryw <- tape_bdryw_inbuilt(bdryw, x = tranman$tran$toM(ytape), acut = acut)
+  } else if (!inherits(bdryw, "Rcpp_ADFun")){
+    stop("bdryw must be a name or a taped boundary weight function")
+  }
+
   smdtape <- tapesmd(uldtape = lltape,
                         tran = tranman$tran,
                         M = tranman$man,
-                        weightname = bdryw,
-                        acut = acut,
+                        bdrywtape = bdryw,
                         verbose = verbose)
   return(list(
     lltape = lltape,
@@ -82,7 +90,7 @@ tape_smd <- function(start, tran = "identity", end = start, ll,
       transform = tran,
       endmanifold = end,
       ulength = length(ytape),
-      bdryw = bdryw,
+      bdryw = bdryw$name,
       acut = acut
     )
   ))

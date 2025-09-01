@@ -54,11 +54,12 @@ The code (possibly in the file pointed to by \code{fileORcode}) must be \verb{C+
 The start of \code{code} should always be "\verb{a1type fname(const veca1 &x, const veca1 &theta)\{}" where \code{fname} is your chosen name of the log-density function, \code{x} represents a point in the data space and \code{theta} is a vector of parameters for the log-density. This specifies that the function will have two vector arguments (of type \code{veca1}) and will return a single numeric value (\code{a1type}).
 
 The type \code{a1type} is a double with special ability for being taped by \code{CppAD}. The \code{veca1} type is a vector of \code{a1type} elements, with the vector wrapping supplied by the \code{Eigen} C++ package (that is an \code{Eigen} matrix with 1 column and dynamic number of rows).
+In place operations like \verb{+=} on \code{a1type}, \code{veca1} and similar have not worked for me (compile errors); fortunately the efficiency of in place operations is irrelevant for taping operations.
 
 The body of the function must use operations from Eigen and/or CppAD, prefixed by \verb{Eigen::} and \verb{CppAD::} respectively.
 There are no easy instructions for writing these as it is genuine \verb{C++} code, which can be very opaque to those unfamiliar with \verb{C++}.
 However, recently ChatGPT and claude.ai have been able to very quickly translating \code{R} functions to \verb{C++} functions (KLH has been telling these A.I. to use Eigen and CppAD, and giving the definitions of \code{a1type} and \code{veca1}).
-I've found the quick reference pages for for \href{https://eigen.tuxfamily.org/dox/}{\code{Eigen}} useful. Limited unary and binary operations are available directly from \href{https://cppad.readthedocs.io}{\code{CppAD}} without \code{Eigen}.
+I've found the quick reference pages for \href{https://libeigen.gitlab.io/eigen/docs-nightly/group__QuickRefPage.html}{\code{Eigen}} useful. Limited unary and binary operations are available directly from \href{https://cppad.readthedocs.io}{\code{CppAD}} without \code{Eigen}.
 For the purposes of score matching the operations should all be smooth to create a smooth log-density and the normalising constant may be omitted.
 }
 
@@ -74,8 +75,13 @@ out$tape$name
 }
 \seealso{
 Other tape builders: 
+\code{\link{avgrange}()},
+\code{\link{fixdynamic}()},
+\code{\link{fixindependent}()},
+\code{\link{keeprange}()},
 \code{\link{tape_Hessian}()},
 \code{\link{tape_Jacobian}()},
+\code{\link{tape_bdryw}()},
 \code{\link{tape_gradoffset}()},
 \code{\link{tape_logJacdet}()},
 \code{\link{tape_smd}()},

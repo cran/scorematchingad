@@ -24,6 +24,17 @@ taylorApprox <- function(pfun, x, centre, dynparam, order) {
     .Call(`_scorematchingad_taylorApprox`, pfun, x, centre, dynparam, order)
 }
 
+#' @title Average Across Range of a Tape
+#' @family tape builders
+#' @param pfun An `Rcpp_ADFun` object.
+#' @description Creates a `CppAD` tape that is the average of the returned values of `pfun`.
+#' For creating this tape, the values of `pfun$dyntape` and `pfun$xtape` are used.
+#' @return An `Rcpp_ADFun` object.
+#' @export
+avgrange <- function(pfun) {
+    .Call(`_scorematchingad_avgrange`, pfun)
+}
+
 set_cppad_error_handler <- function() {
     invisible(.Call(`_scorematchingad_set_cppad_error_handler`))
 }
@@ -32,12 +43,46 @@ test_Rcpphandler <- function() {
     invisible(.Call(`_scorematchingad_test_Rcpphandler`))
 }
 
-fixdynamic <- function(uld, theta, fixedtheta) {
-    .Call(`_scorematchingad_fixdynamic`, uld, theta, fixedtheta)
+#' @title Fix Dynamic Parameters of a Tape
+#' @family tape builders
+#' @param pfun An `Rcpp_ADFun` object.
+#' @param theta A numerical vector specifying the value of all dynamic parameters of `pfun`. Some of these will be fixed according to `isfixed`, the remainder will remain dynamic.
+#' @param isfixed A boolean vector same length as `theta`. `TRUE` values are fixed at the value of `theta`, `FALSE` values are left dynamic.
+#' @description Retapes an existing `CppAD` tape but with some of original dynamic parameters fixed to specified values.
+#' For creating this tape, the values of `pfun$xtape` is used.
+#' @return An `Rcpp_ADFun` object.
+#' @export
+fixdynamic <- function(pfun, theta, isfixed) {
+    .Call(`_scorematchingad_fixdynamic`, pfun, theta, isfixed)
 }
 
 reembed <- function(uld, tran) {
     .Call(`_scorematchingad_reembed`, uld, tran)
+}
+
+#' @title Fix Independent Arguments of a Tape
+#' @family tape builders
+#' @param pfun An `Rcpp_ADFun` object.
+#' @param x A numerical vector specifying the value of all independent arguments of `pfun`. Some of these will be fixed according to `isfixed`, the remainder will remain as independent arguments.
+#' @param isfixed A boolean vector same length as `x`. `TRUE` values are fixed at the value of `x`, `FALSE` values are left as independent arguments.
+#' @description Retapes an existing `CppAD` tape but with some of original independent arguments fixed to specified values.
+#' For creating this tape, the values of `pfun$dyntape` are used.
+#' @return An `Rcpp_ADFun` object.
+#' @export
+fixindependent <- function(pfun, x, isfixed) {
+    .Call(`_scorematchingad_fixindependent`, pfun, x, isfixed)
+}
+
+#' @title Reduce Range Dimension of a Tape
+#' @family tape builders
+#' @param pfun An `Rcpp_ADFun` object.
+#' @param keep Integers (lowest of 1, highest of `pfun$range`) specifying which elements of the range to keep. To keep all pass `keep = seq(1, pfun$range)`.
+#' @description Retapes an existing `CppAD` tape omitting some of the returned elements.
+#' For creating this tape, the values of `pfun$dyntape` and `pfun$xtape` are used.
+#' @return An `Rcpp_ADFun` object.
+#' @export
+keeprange <- function(pfun, keep) {
+    .Call(`_scorematchingad_keeprange`, pfun, keep)
 }
 
 #' @title Tape the Jacobian of CppAD Tape
@@ -129,14 +174,26 @@ tape_swap <- function(pfun) {
     .Call(`_scorematchingad_tape_swap`, pfun)
 }
 
-#' @noRd
-#' @title Tape of a log-density calculation 2
-#' @param p dimension of measurements
-#' @param bd dimension of the parameter vector
-#' @param llname name of the likelihood function
-#' @return An RCpp::XPtr object pointing to the ADFun
-ptapell2 <- function(z_ad, theta_ad, llfXPtr, tran, fixedtheta, verbose) {
-    .Call(`_scorematchingad_ptapell2`, z_ad, theta_ad, llfXPtr, tran, fixedtheta, verbose)
+#' @rdname tape_bdryw
+#' @name tape_bdryw
+#' @param name Name of an inbuilt function. See details.
+#' @param acut The \eqn{a_c} threshold used by the "minsq" and "prodsq" built-in functions. See details.
+#' @details
+#' For `tape_bdryw_inbuilt()`, currently available functions are:
+#' * The function "ones" applies no weights and should be used whenever the manifold does not have a boundary.
+#' \deqn{h(x)^2 = 1.}
+#' * The function "minsq" is the minima-based boundary weight function \insertCite{@Equation 12, @scealy2023sc}{scorematchingad}
+#' \deqn{h(x)^2 = \min(x_1^2, x_2^2, ..., x_p^2, a_c^2).}{h(x)^2 = min(x1^2, x2^2, ..., xp^2, a_c^2),}
+#' where \eqn{x_j}{xj} is the jth component of x. 
+#' * The function "prodsq" is the product-based \insertCite{@Equation 9, @scealy2023sc}{scorematchingad}
+#' \deqn{h(x)^2 = \min(\prod_{j=1}^{p} x_j^2, a_c^2).}{h(x)^2 = min(x1^2 * x2^2 * ... * xp^2, a_c^2),}
+#' where \eqn{x_j}{xj} is the jth component of x.
+#'
+#' The "minsq" and "prodsq" functions are useful when the manifold is the positive orthant, the p-dimensional unit sphere restricted to the positive orthant, or the unit simplex.
+#' \insertCite{@scealy2023sc}{scorematchingad} prove that both "minsq" and "prodsq" can be used for score matching the PPI model on the simplex or positive orthant of the sphere.
+#' @export
+tape_bdryw_inbuilt <- function(name, x, acut) {
+    .Call(`_scorematchingad_tape_bdryw_inbuilt`, name, x, acut)
 }
 
 #' @noRd
@@ -169,7 +226,7 @@ tape_uld_inbuilt <- function(name, x, theta) {
 #' @param weightname The name of the weight function to use
 #' @param acut The constraint a_c in the weight function
 #' @return An RCpp::XPtr object pointing to the ADFun
-tapesmd <- function(uldtape, tran, M, weightname, acut, verbose) {
-    .Call(`_scorematchingad_tapesmd`, uldtape, tran, M, weightname, acut, verbose)
+tapesmd <- function(uldtape, tran, M, bdrywtape, verbose) {
+    .Call(`_scorematchingad_tapesmd`, uldtape, tran, M, bdrywtape, verbose)
 }
 
