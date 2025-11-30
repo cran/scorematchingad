@@ -1,6 +1,6 @@
-0c09f7cfc5a47f1b98ce50712bf886f4 *DESCRIPTION
+4d2ef0275451af9dc3d7a0aeca59ebf0 *DESCRIPTION
 44e5df35a98e3046ab02a18978c06225 *NAMESPACE
-730f4d57990c88a0318412eb42c0a46e *NEWS.md
+4f7a42da678d49c5d6fea2c88e3f3754 *NEWS.md
 b5ae0523f4ef3ac2356461d076792a40 *R/Bingham.R
 976fadf00f14bc0ba536fb4a36c100e4 *R/FB.R
 4229a322aa76a695f04b84b7351954e7 *R/RcppExports.R
@@ -65,7 +65,7 @@ b1aae74ea7554db7fb5734eefeffc57a *R/vMF_robust.R
 cb79a3c25f5e044da5b3a6958b124419 *R/virtualweights.R
 5b3902644bd967731aed18b2363ce14d *R/wcolSums.R
 23dbf482216ffb741834e85fc26c38b4 *README.md
-7d9b943047903d52eb07280176431144 *build/partial.rdb
+9d6a0a366bd16570baa5093a8f529706 *build/partial.rdb
 0ff51044fc50bca76de59b1a37bcce15 *cleanup
 db93430a4318a2e0cfe0d50047c61528 *configure
 b9f72eed6408c2484a9f5e1f06aefbf4 *configure.ac
@@ -1438,6 +1438,6 @@ ef75626cbfcd26461080802aae6fe5bc *tests/testthat/test-simplex_boundary.R
 bf6003878165369f530c0bc667da3620 *tests/testthat/test-tape_uld.R
 2f4c3837cbe2e094700215bf3e9c295b *tests/testthat/test-tapell.R
 6b6906c37c6a82563b74cc9855dea5ec *tests/testthat/test-toAstar.R
-337cf84b0030e7aa1eb46f879176e98b *tests/testthat/test-vMF.R
+8701892c363531666ed2fd6ebfdf1992 *tests/testthat/test-vMF.R
 b765358acb8da96ac02fd96cff7658f9 *tests/testthat/test-weights-cppad_simulated_weights.R
 0bd544ef004c14195b75fd89829c6523 *tests/testthat/test-weights-manyestimators.R
